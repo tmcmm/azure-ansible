@@ -1,0 +1,67 @@
+- name: Create Azure VM
+  hosts: localhost
+  connection: local
+  tasks:
+  - name: Create resource group
+    azure_rm_resourcegroup:
+      name: k8s-lab1 
+      location: westeurope
+  - name: Create virtual network
+    azure_rm_virtualnetwork:
+      resource_group: k8s-lab1
+      name: ubuntu-k8s-lab1VNET
+      address_prefixes: "10.0.0.0/16"
+  - name: Add subnet
+    azure_rm_subnet:
+      resource_group: k8s-lab1
+      name: ubuntu-k8s-lab1Subnet
+      address_prefix: "10.0.0.0/24"
+      virtual_network: ubuntu-k8s-lab1VNET
+  - name: Create public IP address
+    azure_rm_publicipaddress:
+      resource_group: k8s-lab1
+      allocation_method: Static
+      name: myPublicIP
+    register: output_ip_address
+  - name: Dump public IP for VM which will be created
+    debug:
+      msg: "The public IP is {{ output_ip_address.state.ip_address }}."
+  - name: Create Network Security Group that allows SSH
+    azure_rm_securitygroup:
+      resource_group: k8s-lab1
+      name: myNetworkSecurityGroup
+      rules:
+        - name: SSH
+          protocol: Tcp
+          destination_port_range: 22
+          access: Allow
+          priority: 1001
+          direction: Inbound
+  - name: Create virtual network interface card
+    azure_rm_networkinterface:
+      resource_group: k8s-lab1
+      name: ubuntu-k8s-lab1VMNic
+      virtual_network: ubuntu-k8s-lab1VNET
+      subnet: ubuntu-k8s-lab1Subnet
+      public_ip_name: myPublicIP
+      security_group: myNetworkSecurityGroup
+  - name: Create Virtual Machine for Lab01
+    azure_rm_virtualmachine:
+      resource_group: k8s-lab1
+      name: ubuntu-k8s-lab1
+      vm_size: Standard_D4s_v3
+      admin_username: azureuser
+      ssh_password_enabled: false
+      ssh_public_keys:
+        - path: /home/azureuser/.ssh/authorized_keys
+          key_data: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDQ+tZ0vkk0l7UvLrXBd0yfXBZIHwlZTDWCKC+K0Y7B6La34fQcryBUrsVPrJ8kwklxOLIAUOpA/oRefqhGSdPxolRDYOdXjDUfY+aROa3W3gARYmfpZSYmXCOFqIFJpSA+B9Kg02EPDHpmwfObGnoXWF/SqEYUfQD/q1gB5i5Y9gBfakaFsUoIPh4KujUaFKMP8qyOBqq9iHQmyi2nSlLfg1Ek6sydgBeaL84m1BQgeYMsbhd/66PNWBfCT59bGO7TgXzdLp0J6qefYD3Ipz7yjT9jrGrN+znIkmUOc6JWwljuIKRlSYnkYwvCJiQiJal2W7zzhiSbmdwl1fy03tbf azureuser@azure
+      image:
+        offer: UbuntuServer
+        publisher: Canonical
+        sku: '18.04-LTS'
+        version: latest
+      data_disks:
+        - lun: 0
+          disk_size_gb: 128
+          managed_disk_type: StandardSSD_LRS 
+    register: vm01

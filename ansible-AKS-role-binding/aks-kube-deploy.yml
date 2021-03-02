@@ -1,0 +1,4 @@
+- name: Apply role to AKS
+  k8s:
+      src: kube-role.yml
+      kubeconfig: "aks-{{ name }}-kubeconfig"
