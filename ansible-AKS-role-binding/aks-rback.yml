@@ -21,7 +21,3 @@
      - name: Enable RBAC
        include_tasks: aks-kube-deploy.yml
 
-subscription_id=10dfa491-ff80-4d70-a4ee-9aeb49b8c00e
-client_id=db93c95c-062d-4cb7-8d56-773baa4cddef
-secret=BBFJ2dMDsbuj8fT3Dp.O_-e3vWPb-iKAeM
-tenant=72f988bf-86f1-41af-91ab-2d7cd011db47
