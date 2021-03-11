@@ -1,64 +1,88 @@
 - name: Create Azure VM
   hosts: localhost
   connection: local
+  vars_files:
+    - /vars/variables.yml
   tasks:
   - name: Create resource group
     azure_rm_resourcegroup:
-      name: ansibleTest
-      location: eastus
+      name: {{ resource_group }}
+      location: {{ resource_group_location }}
+    register: resource_group
+
   - name: Create virtual network
     azure_rm_virtualnetwork:
-      resource_group: ansibleTest
-      name: myVnet
-      address_prefixes: "10.0.0.0/16"
-  - name: Add subnet
+      resource_group: {{ resource_group }}
+      name: {{ vnet_name }}
+      address_prefixes: {{ vnet_address_prefixes }}
+    register: virtual_network 
+
+  - name: Add subnet to the virtual network
     azure_rm_subnet:
-      resource_group: ansibleTest
-      name: mySubnet
-      #address_prefix: "10.0.1.0/24"
-      address_prefix: "10.244.0.0/16"
-      virtual_network: myVnet
+      resource_group: {{ resource_group }}
+      name: {{ subnet_name }}
+      address_prefix: {{ subnet_address_prefixes }}
+      virtual_network: {{ vnet_name }}
+    register: subnet_network
+
   - name: Create public IP address
     azure_rm_publicipaddress:
-      resource_group: ansibleTest
+      resource_group: {{ resource_group }}
       allocation_method: Static
-      name: myPublicIP
+      name: {{ network_vm_public_ip }}
     register: output_ip_address
+
   - name: Dump public IP for VM which will be created
     debug:
-      msg: "The public IP is {{ output_ip_address.state.ip_address }}."
-  - name: Create Network Security Group that allows SSH
+      msg: "The public IP of your VM is {{ output_ip_address.state.ip_address }}."
+      
+  - name: Create Network Security Group that allows SSH from your provider public IP 
     azure_rm_securitygroup:
-      resource_group: ansibleTest
-      name: myNetworkSecurityGroup
+      resource_group: {{ resource_group }}
+      name: {{ network_security_group_name }}
       rules:
         - name: SSH
           protocol: Tcp
           destination_port_range: 22
+          source_port_range: *
           access: Allow
           priority: 1001
           direction: Inbound
+          source_address_prefix: {{ network_provider_public_ip }}
+          destination_address_prefix: {{ subnet_address_prefixes }}
+          description: "Allow from MY ISP IP"
+ 
   - name: Create virtual network interface card
     azure_rm_networkinterface:
-      resource_group: ansibleTest
-      name: myNIC
-      virtual_network: myVnet
-      subnet: mySubnet
-      public_ip_name: myPublicIP
-      security_group: myNetworkSecurityGroup
+      resource_group: {{ resource_group }}
+      name: {{ vm_nic_name }}
+      virtual_network: {{ vnet_name }}
+      subnet: {{ subnet_name }}
+      public_ip_name: {{ network_vm_public_ip_name }}
+      security_group: {{ network_security_group_name }}
+    register: nic_card 
+
   - name: Create VM
     azure_rm_virtualmachine:
-      resource_group: ansibleTest
-      name: myVM
-      vm_size: Standard_DS1_v2
-      admin_username: azureuser
+      resource_group: {{ resource_group }}
+      name: {{ vm_name }}
+      tags: {{ vm_tags }}
+      vm_size: {{ vm_size }}
+      admin_username: {{ vm_admin_username }}
+      short_hostname: {{ vm_ hostname}}
       ssh_password_enabled: false
       ssh_public_keys:
-        - path: /home/azureuser/.ssh/authorized_keys
-          key_data: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDQ+tZ0vkk0l7UvLrXBd0yfXBZIHwlZTDWCKC+K0Y7B6La34fQcryBUrsVPrJ8kwklxOLIAUOpA/oRefqhGSdPxolRDYOdXjDUfY+aROa3W3gARYmfpZSYmXCOFqIFJpSA+B9Kg02EPDHpmwfObGnoXWF/SqEYUfQD/q1gB5i5Y9gBfakaFsUoIPh4KujUaFKMP8qyOBqq9iHQmyi2nSlLfg1Ek6sydgBeaL84m1BQgeYMsbhd/66PNWBfCT59bGO7TgXzdLp0J6qefYD3Ipz7yjT9jrGrN+znIkmUOc6JWwljuIKRlSYnkYwvCJiQiJal2W7zzhiSbmdwl1fy03tbf azureuser@azure
-      network_interfaces: myNIC
+        - path: {{ ssh_keys_path_dest }}
+          key_data: {{ public_ssh_key }}
+      network_interfaces: {{ vm_nic_name }}      
       image:
-        offer: CentOS
-        publisher: OpenLogic
-        sku: '7.5'
-        version: latest
+        offer: {{ vm_offer }}
+        publisher: {{ vm_publisher }}
+        sku: {{ vm_sku }}
+        version: {{ vm_version }}
+      data_disks:
+        - lun: 0
+          disk_size_gb: {{ vm_disk_size }}
+          managed_disk_type: {{ vm_disk_managed_type }} 
+          storage_container_name: {{ vm_disk_storage_container_name }}
+    register: vm01
