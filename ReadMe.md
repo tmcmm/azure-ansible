@@ -8,9 +8,20 @@ Change the variables.yml file accordingly to the variables you want to use.
 
 ### Pre-Requisites
 
-- Having Ansible Installed >= 2.9.6
+- Having Ansible Installed >=2.9
+- python >= 2.6
+- azure >= 0.7.1
+- Azure modules and Azure community modules
 - Create an SP (Service Principal) capable of creating the Azure Objects
 - Create the file credentials inside /home/user/.azure/
+
+Install Azure modules and community modules:
+```
+ansible-galaxy install azure.azure_preview_modules   
+wget -nv -q https://raw.githubusercontent.com/ansible-collections/azure/dev/requirements-azure.txt
+pip3 install -r requirements-azure.txt
+ansible-galaxy collection install community.azure
+```
 
 Creating SP:
 ```
