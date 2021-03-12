@@ -36,6 +36,7 @@
     wait_for:
       timeout: 100
     delegate_to: localhost
+    when: output_ip_address is changed
 
   - name: Dump public IP for VM which will be created
     debug:
