@@ -2,7 +2,7 @@
   hosts: localhost
   connection: local
   vars_files:
-    - /vars/variables.yml
+    - vars/variables.yml
   tasks:
   - name: Create resource group
     azure_rm_resourcegroup:
