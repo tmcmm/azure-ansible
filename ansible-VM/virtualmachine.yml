@@ -66,12 +66,13 @@
       subnet: "{{ subnet_name }}"
       public_ip_name: "{{ network_vm_public_ip_name }}"
       security_group: "{{ network_security_group_name }}"
-    register: nic_card 
+    register: nic_card
 
   - name: List all VM's from publisher available in that region
     community.azure.azure_rm_virtualmachineimage_info:
       location: "{{ resource_group_location }}"
       publisher: "{{ vm_publisher }}"
+    register: list_vm
 
   - name: Create VM
     azure_rm_virtualmachine:
