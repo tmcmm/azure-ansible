@@ -1,12 +1,12 @@
 ---
 - hosts: localhost
   vars_files:
-    - /vars/variables.yml
+    - vars/variables.yml
   tasks:
      - name: Ensure resource group exist
        azure_rm_resourcegroup:
            name: "{{ resource_group }}"
-           location: "{{ location }}"
+           location: "{{ resource_group_location }}"
 
      - name: Create vnet
        include_tasks: vnet.yml

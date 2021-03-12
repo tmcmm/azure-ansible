@@ -1,2 +1,0 @@
-Delete resource group:
-ansible-playbook delete_rg.yml --extra-vars "name=<resource_group>"

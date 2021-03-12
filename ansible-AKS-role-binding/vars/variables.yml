@@ -1,9 +1,28 @@
-## RESOUCE VARIABLES
-resource_group: ansible-vm
-resource_group_location: eastus
+## AppGtw resource variables
+appgtw_purpose: lab
+appgtw_resource_group: "ansible-vm-{{appgtw_purpose}}"
+resource_group_location: westeurope
 
+## AKS variables
+aks_subnet_name: "aks-subnet"
+aks_address_prefix: "10.0.8.0/21"
+aks_purpose: lab
+aks_resource_group: "{{ appgtw_resource_group }}"
+aks_rg_location: "{{ appgtw_resource_location }}"
+aks_cluster_name: "aks-appgtw-{{ aks_purpose }}"
+aks_node_size: "Standard_DS2_v2"
+aks_node_count: 3
+aks_node_pool_name: "aks-nodepool"
+aks_node_disk_size: 60
+aks_vmsettype: "VirtualMachineScaleSets"
+aks_version: 1.19.6
+aks_cni_plugin: "azure"
+aks_cluster_srv_cidr: "10.0.32.0/21"
+aks_cluster_dns: "10.0.32.10"
+aks_cluster_docker_bridge: "172.17.0.1/16"
+aks_cluster_admin_user: azureuser
 
-## NETWORK VARIABLES
+## VM NETWORK VARIABLES
 vnet_name: vm_myVnet
 vnet_address_prefixes: "10.0.0.0/16"
 subnet_name: vm_mySubnet

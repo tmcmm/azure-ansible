@@ -1,23 +1,30 @@
 ---
 - hosts: localhost
   vars:
-      resource_group: aksansibletest
-      name: aksansibletest
-      location: eastus
+  - vars/variables.yml
   tasks:
+    ## Create the AppGtw RG
      - name: Ensure resource group exists
        azure_rm_resourcegroup:
            name: "{{ resource_group }}"
-           location: "{{ location }}"
+           location: "{{ resource_group_location }}"
 
      - name: Create vnet
-       include_tasks: vnet.yml
+       include_tasks: vnet.yml 
 
      - name: Create AKS
-       vars:
-           vnet_subnet_id: "{{ subnet.state.id }}"
        include_tasks: aks.yml
 
      - name: Show AKS cluster detail
        debug:
            var: aks
+
+     - name: Get Kubeconfig for one Azure Kubernetes Service
+      azure_rm_aks_info:
+        name: "{{ aks_cluster_name }}"
+        resource_group: "{{ aks_resource_group }}"
+        show_kubeconfig: user
+        
+     - name: Create VM 
+       include_tasks: vm.yml
+       

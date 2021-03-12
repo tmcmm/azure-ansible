@@ -12,10 +12,10 @@
 
      - name: Create AKS
        vars:
-           client_app_id: db93c95c-062d-4cb7-8d56-773baa4cddef
-           server_app_id: 10dfa491-ff80-4d70-a4ee-9aeb49b8c00e
-           server_app_secret: BBFJ2dMDsbuj8fT3Dp.O_-e3vWPb-iKAeM
-           app_tenant_id: 72f988bf-86f1-41af-91ab-2d7cd011db47
+           client_app_id: 
+           server_app_id: 
+           server_app_secret: 
+           app_tenant_id: 
        include_tasks: aks-create.yml
 
      - name: Enable RBAC

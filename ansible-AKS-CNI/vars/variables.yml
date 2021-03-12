@@ -1,0 +1,67 @@
+## AppGtw resource variables
+appgtw_purpose: lab
+appgtw_resource_group: "ansible-vm-{{appgtw_purpose}}"
+resource_group_location: westeurope
+
+## AppGtw Vnet
+appgtw_vnet_name: "main-vnet"
+appgtw_vnet_address_prefix: "10.0.0.0/16"
+appgtw_subnet_address_name: "appgtw-subnet"
+appgtw_subnet_address_prefix: "10.0.24.0/24"
+
+## AppGtw public IP
+appgtw_public_ip_name: "myAppgtwPublicIPAddress"
+appgtw_public_ip_allocation_method: "Static"
+appgtw_public_ip_sku: "Standard"
+
+## AppGtw deploy
+appgtw_name: "tiagoappgtw"
+appgtw_capacity: 2
+appgtw_sku: "Standard_v2"
+appgtw_frontend_ip_config_name: "tiago_appgtw_frontend_ip"
+sample_gateway_frontend_ip_config
+
+## AKS variables
+aks_subnet_name: "aks-subnet"
+aks_address_prefix: "10.0.8.0/21"
+aks_purpose: lab
+aks_resource_group: "{{ appgtw_resource_group }}"
+aks_rg_location: "{{ appgtw_resource_location }}"
+aks_cluster_name: "aks-appgtw-{{ aks_purpose }}"
+aks_node_size: "Standard_DS2_v2"
+aks_node_count: 3
+aks_node_pool_name: "aks-nodepool"
+aks_node_disk_size: 60
+aks_vmsettype: "VirtualMachineScaleSets"
+aks_version: 1.19.6
+aks_cni_plugin: "azure"
+aks_cluster_srv_cidr: "10.0.32.0/21"
+aks_cluster_dns: "10.0.32.10"
+aks_cluster_docker_bridge: "172.17.0.1/16"
+aks_cluster_admin_user: azureuser
+
+## VM NETWORK VARIABLES
+#vnet_name: vm_myVnet
+#vnet_address_prefixes: "10.0.0.0/16"
+vm_subnet_name: vm_mySubnet
+vm_subnet_address_prefixes: "10.0.24.0/24"
+network_security_group_name:  myNetworkSecurityGroup
+network_vm_public_ip_name: myPublicIP
+network_provider_public_ip: 94.62.149.32
+
+## VM SSH VARIABLES
+vm_name: vm-01
+vm_nic_name: myNic
+vm_size: Standard_D2s_v3
+vm_admin_username: azureuser
+vm_hostname: "sshclient-{{ vm_name }}"
+ssh_keys_path_dest: "/home/{{ vm_admin_username }}/.ssh/authorized_keys"
+public_ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDB+DoHxxsTh7OOInk4U1DfDVI5uudBaOuAQsmC+1TX8gQqWsct2Z6ulZsXzXQWO3g+PWNdWe15vVRoh4LrY5j5I+RyYUaof7BBVS2FI3YbevYRmJ2HG6dVUVkDNd70AMRA0GS0Rpw2bT7GJ6D0u+zOfEa2h9u2lcxwLFHHOwXvEFxwnwevcCWRQEFYl9SN4r3cs2YG4jWou7ujHaGHHKb/JZ2ItnRsLCxjO74WC+JSYHmF//O5A4A+dzrp71P2DqyQHHRf6T38nQMiu0CsvgK0UgVED49Epb5ym9LlD+JxXz+GwEldJH98J2qWhv6nXVuQjgrE7fjmw39+shD4pkkZ"
+vm_offer: "UbuntuServer"
+vm_publisher: "Canonical"
+vm_sku: "18.04-LTS"
+vm_version: latest
+vm_disk_size: 40
+vm_disk_managed_type: StandardSSD_LRS
+vm_disk_storage_container_name: "{{ vm_name }}_disk_01"
+vm_tags: "env=kubernetes"

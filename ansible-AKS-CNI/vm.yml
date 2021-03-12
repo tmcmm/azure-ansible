@@ -1,33 +1,20 @@
-- name: Create Azure VM
-  hosts: localhost
-  connection: local
-  vars_files:
-    - vars/variables.yml
-  tasks:
   - name: Create resource group
     azure_rm_resourcegroup:
-      name: "{{ resource_group }}"
-      location: "{{ resource_group_location }}"
+      name: "{{ aks_resource_group }}"
+      location: "{{ aks_rg_location }}"
     register: resource
 
-  - name: Create virtual network
-    azure_rm_virtualnetwork:
-      resource_group: "{{ resource_group }}"
-      name: "{{ vnet_name }}"
-      address_prefixes: "{{ vnet_address_prefixes }}"
-    register: virtual_network 
-
-  - name: Add subnet to the virtual network
+  - name: Create VM ssh subnet
     azure_rm_subnet:
-      resource_group: "{{ resource_group }}"
-      name: "{{ subnet_name }}"
-      address_prefix: "{{ subnet_address_prefixes }}"
-      virtual_network: "{{ vnet_name }}"
-    register: subnet_network
+      resource_group: "{{ aks_resource_group }}"
+      name: "{{ vm_subnet_name }}"
+      address_prefix: "{{ vm_subnet_address_prefixes }}"
+      virtual_network: "{{ appgtw_vnet_name }}"
+    register: subnet_vm_network
 
   - name: Create public IP address
     azure_rm_publicipaddress:
-      resource_group: "{{ resource_group }}"
+      resource_group: "{{ aks_resource_group }}"
       allocation_method: Static
       name: "{{ network_vm_public_ip_name }}"
     register: output_ip_address
@@ -44,7 +31,7 @@
       
   - name: Create Network Security Group that allows SSH from your provider public IP 
     azure_rm_securitygroup:
-      resource_group: "{{ resource_group }}"
+      resource_group: "{{ aks_resource_group }}"
       name: "{{ network_security_group_name }}"
       rules:
         - name: SSH
@@ -55,15 +42,15 @@
           priority: 1001
           direction: Inbound
           source_address_prefix: "{{ network_provider_public_ip }}"
-          destination_address_prefix: "{{ subnet_address_prefixes }}"
+          destination_address_prefix: "{{ vm_subnet_address_prefixes }}"
           description: "Allow from MY ISP IP"
  
   - name: Create virtual network interface card
     azure_rm_networkinterface:
-      resource_group: "{{ resource_group }}"
+      resource_group: "{{ aks_resource_group }}"
       name: "{{ vm_nic_name }}"
-      virtual_network: "{{ vnet_name }}"
-      subnet: "{{ subnet_name }}"
+      virtual_network: "{{ appgtw_vnet_name }}"
+      subnet: "{{ vm_subnet_name }}"
       public_ip_name: "{{ network_vm_public_ip_name }}"
       security_group: "{{ network_security_group_name }}"
     register: nic_card
@@ -76,7 +63,7 @@
 
   - name: Create VM
     azure_rm_virtualmachine:
-      resource_group: "{{ resource_group }}"
+      resource_group: "{{ aks_resource_group }}"
       name: "{{ vm_name }}"
       tags: "{{ vm_tags }}"
       vm_size: "{{ vm_size }}"
@@ -98,3 +85,18 @@
           managed_disk_type: "{{ vm_disk_managed_type }}"
           storage_container_name: "{{ vm_disk_storage_container_name }}"
     register: vm01
+
+  - name: Sleep for 100 seconds while creating the VM
+    wait_for:
+      timeout: 100
+    delegate_to: localhost
+
+  - name: Copy to VM private key of the Cluster
+    vars:
+      vm_private_key: "{{ lookup('file', '~/.ssh/id_rsa') }}"
+    command: "scp -o StrictHostKeyChecking=no -i {{ vm_private_key }} {{ vm_admin_username }}@{{ output_ip_address.state.ip_address }}:/home/{{ vm_admin_username }}/id_rsa"
+
+  - name: Change permissions on the AKS private key
+    vars:
+      vm_private_key: "{{ lookup('file', '~/.ssh/id_rsa') }}"
+    command: "ssh -i {{ vm_private_key }} {{ vm_admin_username }}@{{ output_ip_address.state.ip_address }} chmod 600 /home/{{ vm_admin_username }}/id_rsa "

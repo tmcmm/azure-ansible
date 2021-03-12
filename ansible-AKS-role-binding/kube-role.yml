@@ -9,6 +9,5 @@ roleRef:
 subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
-  name: 6782c04b-75d7-477e-8e47-366aeff48698
-# OBJECT ID FROM AZURE AD ->  SEARCH FOR TMCMM
-# 6782c04b-75d7-477e-8e47-366aeff48698
+  name: 
+# OBJECT ID FROM AZURE AD ->  SEARCH FOR your user

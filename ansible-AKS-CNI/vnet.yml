@@ -1,14 +1,55 @@
-- name: Create vnet
+- name: Create AppGtw Vnet
   azure_rm_virtualnetwork:
-      resource_group: "{{ resource_group }}"
-      name: "{{ name }}"
-      address_prefixes_cidr:
-          - 10.0.0.0/8
+      resource_group: "{{ appgtw_resource_group }}"
+      name: "{{ appgtw_vnet_name }}"
+      location: "{{ resource_group_location }}"
+      address_prefixes: "{{ appgtw_vnet_address_prefix }}"
+  register: appgtw_vnet    
 
-- name: Create subnet
+- name: Create appgtw subnet
   azure_rm_subnet:
-      resource_group: "{{ resource_group }}"
-      name: "{{ name }}"
-      address_prefix_cidr: 10.240.0.0/16
-      virtual_network_name: "{{ name }}"
-  register: subnet
+      resource_group: "{{ appgtw_resource_group }}"
+      name: "{{ appgtw_subnet_address_name }}"
+      address_prefix_cidr: "{{ appgtw_subnet_address_prefix }}"
+      virtual_network_name: "{{ appgtw_vnet_name }}"
+  register: appgtw_subnet
+
+- name: Create public IP address for AppGtw
+  azure_rm_publicipaddress:
+      resource_group: "{{ appgtw_resource_group }}"
+      allocation_method: "{{ appgtw_public_ip_allocation_method }}"
+      sku: "{{ appgtw_public_ip_sku }}"
+      name: "{{ appgtw_public_ip_name }}"
+  register: output_ip_address
+
+- name: Sleep for 100 seconds while creating the public ip_address
+  wait_for:
+    timeout: 100
+  delegate_to: localhost
+  when: output_ip_address is changed
+
+- name: Dump public IP for VM which will be created
+  debug:
+    msg: "The public IP of your VM is {{ output_ip_address.state.ip_address }}."
+
+- name: Create instance of Application Gateway
+  azure_rm_appgateway:
+    resource_group: "{{ appgtw_resource_group }}"
+    name: "{{ appgtw_name }}"
+    sku:
+      tier: "{{ appgtw_sku }}"
+      capacity: "{{ appgtw_capacity }}"
+    frontend_ip_configurations:
+      - subnet:
+          id: "{{ appgtw_subnet_address_name }}"
+        name: "{{ appgtw_frontend_ip_config_name }}"  
+        public_ip_address: "{{ appgtw_public_ip_name }}"
+  register: appgtw_deploy
+
+- name: Create aks subnet
+  azure_rm_subnet:
+      resource_group: "{{ aks_resource_group }}"
+      name: "{{ aks_subnet_name }}"
+      address_prefix_cidr: "{{ aks_address_prefix }}"
+      virtual_network_name: "{{ appgtw_vnet_name }}"
+  register: aks_subnet
