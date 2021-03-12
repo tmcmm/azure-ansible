@@ -74,7 +74,7 @@
       tags: "{{ vm_tags }}"
       vm_size: "{{ vm_size }}"
       admin_username: "{{ vm_admin_username }}"
-      short_hostname: "{{ vm_ hostname}}"
+      short_hostname: "{{ vm_hostname }}"
       ssh_password_enabled: false
       ssh_public_keys:
         - path: "{{ ssh_keys_path_dest }}"
