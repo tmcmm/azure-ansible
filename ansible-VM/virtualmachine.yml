@@ -8,7 +8,7 @@
     azure_rm_resourcegroup:
       name: "{{ resource_group }}"
       location: "{{ resource_group_location }}"
-    register: resource_group
+    register: resource
 
   - name: Create virtual network
     azure_rm_virtualnetwork:
