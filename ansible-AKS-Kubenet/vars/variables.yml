@@ -1,0 +1,3 @@
+resource_group: aksansibletest
+name: aksansibletest
+location: eastus

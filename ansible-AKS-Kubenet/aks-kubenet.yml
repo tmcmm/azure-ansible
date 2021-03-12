@@ -1,9 +1,7 @@
 ---
 - hosts: localhost
-  vars:
-      resource_group: aksansibletest
-      name: aksansibletest
-      location: eastus
+  vars_files:
+    - /vars/variables.yml
   tasks:
      - name: Ensure resource group exist
        azure_rm_resourcegroup:
