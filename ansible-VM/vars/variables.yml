@@ -7,7 +7,7 @@ resource_group_location: eastus
 vnet_name: vm_myVnet
 vnet_address_prefixes: "10.0.0.0/16"
 subnet_name: vm_mySubnet
-subnet_address_prefixes: "10.244.0.0/16"
+subnet_address_prefixes: "10.0.1.0/16"
 network_security_group_name:  myNetworkSecurityGroup
 network_vm_public_ip_name: myPublicIP
 network_provider_public_ip: 94.62.149.32
