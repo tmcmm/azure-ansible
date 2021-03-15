@@ -31,6 +31,15 @@
 - name: Dump public IP for VM which will be created
   debug:
     msg: "The public IP of your VM is {{ output_ip_address.state.ip_address }}."
+    
+- name: Get facts of specific subnet
+  azure_rm_subnet_info:
+    resource_group: "{{ appgtw_resource_group }}"
+    virtual_network_name: "{{ appgtw_vnet_name }}"
+    name: "{{ appgtw_subnet_address_name }}"
+  register: appgtw_subnet_info  
+
+- debug: msg="subnet_id={{appgtw_subnet_info}}"
 
 - name: Create instance of Application Gateway
   azure_rm_appgateway:
@@ -46,18 +55,6 @@
     frontend_ip_configurations:
         public_ip_address: "{{ appgtw_public_ip_name }}"
   register: appgtw_deploy
-
-echo "Deploy AppGtw"
-az network application-gateway create \
-  -g $APPGTW_RG_NAME \
-  -n $APPGTW_NAME \
-  --capacity $APPGTW_CAPACITY \
-  --sku $APPGTW_SKU \
-  --vnet-name $APPGTW_MAIN_VNET_NAME \
-  --subnet $APPGTW_SUBNET_NAME \
-  --public-ip-address $APPGTW_PUBLIC_IP_NAME \
-  --debug
-
 
 - name: Create aks subnet
   azure_rm_subnet:
