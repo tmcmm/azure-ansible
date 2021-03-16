@@ -3,26 +3,28 @@
       location: "{{ resource_group_location }}"
   register: versions
 
+- debug: msg="Supported_versions={{versions.azure_aks_versions}}"
+
 - name: Create AKS cluster within a VNet
   azure_rm_aks:
       resource_group: "{{ aks_resource_group }}"
       name: "{{ aks_cluster_name }}"
-      dns_prefix: "{{ name }}"
+      dns_prefix: "{{ aks_dns_name }}"
       kubernetes_version: "{{ aks_version }}"
       location: "{{ aks_rg_location }}"
       #kubernetes_version: "{{ versions.azure_aks_versions[-1] }}"
-      agent_pool_profiles:
-        - count: "{{ aks_node_count }}"
-          name: "{{ aks_node_pool_name }}"
-          vm_size: "{{ aks_node_size }}"
-          vnet_subnet_id: "{{ aks_subnet_name }}"
-          type: "{{ aks_vmsettype }}"
       linux_profile:
           admin_username: "{{ aks_cluster_admin_user }}"
           ssh_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
       service_principal:
           client_id: "{{ lookup('ini', 'client_id section=default file=~/.azure/credentials') }}"
           client_secret: "{{ lookup('ini', 'secret section=default file=~/.azure/credentials') }}"
+      agent_pool_profiles:
+        - name: "{{ aks_node_pool_name }}"
+          count: "{{ aks_node_count }}"
+          vm_size: "{{ aks_node_size }}"
+          vnet_subnet_id: "{{ aks_subnet_name }}"
+          type: "{{ aks_vmsettype }}"
       network_profile:
           network_plugin: " aks_cni_plugin "
           docker_bridge_cidr: "{{ aks_cluster_docker_bridge }}"
@@ -30,7 +32,7 @@
           service_cidr: "{{ aks_cluster_srv_cidr }}"
           load_balancer_sku: standard
       tags:
-      Environment: Lab    
+        Environment: Lab    
   register: aks_creation
 
   

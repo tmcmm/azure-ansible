@@ -1,3 +1,20 @@
+## Kubectl Variables
+kubectl:
+  version: "1.20.4"
+  checksum: "sha512:25768fae152a5fd078fe35ddcf0408a7d41672c35319316bd7e68707ba5ac3b7a4d233d41b2b8b66e8b5a18c080dadafd2bc87b2140b2604b06156887d711609"
+  bin_directory: "{{lookup('env', 'TMPDIR') | default('/tmp', true)}}"
+  tmp_directory: "{{lookup('env', 'TMPDIR') | default('/tmp',true)}}"
+  owner: "root"
+  group: "root"
+  os: "linux"
+  arch: "amd64"
+## Helm Variables
+helm:
+  version: v3.5.3
+  checksum: "sha256:2170a1a644a9e0b863f00c17b761ce33d4323da64fc74562a3a6df2abbf6cd70"
+  tmpDir: "{{lookup('env', 'TMPDIR') | default('/tmp', true)}}"
+  binDir: "{{lookup('env', 'TMPDIR') | default('/tmp', true)}}"
+
 ## AppGtw resource variables
 appgtw_purpose: lab
 appgtw_resource_group: "ansible-vm-{{appgtw_purpose}}"
@@ -12,22 +29,31 @@ appgtw_subnet_address_prefix: "10.0.24.0/24"
 ## AppGtw public IP
 appgtw_public_ip_name: "myAppgtwPublicIPAddress"
 appgtw_public_ip_allocation_method: "Static"
+#appgtw_public_ip_sku: "Basic"
 appgtw_public_ip_sku: "Standard"
+#appgtw_public_ip_allocation_method: "Dynamic"
 
 ## AppGtw deploy
-appgtw_name: "tiagoappgtw"
+appgtw_name: "tiago-appgtw"
 appgtw_capacity: 2
-appgtw_sku: "Standard_v2"
+appgtw_sku: "standard_v2"
+appgtw_sku_name: "standard_v2"
+appgtw_gateway_ip_config_name: "tiago_appgtw_ip_config_name"
 appgtw_frontend_ip_config_name: "tiago_appgtw_frontend_ip"
-sample_gateway_frontend_ip_config
+appgtw_frontend_port_name: "tiago_appgtw_frontend_port"
+appgtw_backend_address_pool: "tiago_appgtw_backend_address_pool_name"
+appgtw_http_settings_name: "tiago_appgtw_http_settings_name"
+appgtw_routing_rules_name: "tiago_appgtw_routing_rule"
+appgtw_http_listener_name: "tiago_appgtw_http_listener_name"
 
 ## AKS variables
 aks_subnet_name: "aks-subnet"
 aks_address_prefix: "10.0.8.0/21"
 aks_purpose: lab
 aks_resource_group: "{{ appgtw_resource_group }}"
-aks_rg_location: "{{ appgtw_resource_location }}"
+aks_rg_location: "{{resource_group_location}}"
 aks_cluster_name: "aks-appgtw-{{ aks_purpose }}"
+aks_dns_name: "aks-appgtw-dns"
 aks_node_size: "Standard_DS2_v2"
 aks_node_count: 3
 aks_node_pool_name: "aks-nodepool"
