@@ -31,10 +31,10 @@ list your subscription:
 ```
 az account list (for listing the subscriptionID)
 ```
-AZURE_SUBSCRIPTION_ID ==> subscription_id
-AZURE_CLIENT_ID ==> appId
-AZURE_SECRET ==> password
-AZURE_TENANT ==> tenant
+* AZURE_SUBSCRIPTION_ID ==> subscription_id <br>
+* AZURE_CLIENT_ID ==> appId <br>
+* AZURE_SECRET ==> password <br>
+* AZURE_TENANT ==> tenant <br>
 
 
 credentials file:
