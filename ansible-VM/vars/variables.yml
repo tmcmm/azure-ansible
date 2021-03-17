@@ -9,7 +9,7 @@ subnet_name: vm_mySubnet
 subnet_address_prefixes: "10.0.24.0/24"
 network_security_group_name:  myNetworkSecurityGroup
 network_vm_public_ip_name: myPublicIP
-network_provider_public_ip: 94.62.149.32
+network_provider_public_ip: ""
 
 ## VM SSH VARIABLES
 vm_name: vm-01
@@ -25,5 +25,5 @@ vm_sku: "18.04-LTS"
 vm_version: latest
 vm_disk_size: 40
 vm_disk_managed_type: StandardSSD_LRS
-vm_disk_storage_container_name: "{{ vm_name }}_disk_01"
+vm_os_disk_name: "{{ vm_name }}_disk_01"
 vm_tags: "env=kubernetes"
