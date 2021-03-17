@@ -1,5 +1,5 @@
-Ubuntu 18.04 Docker CE setup
-Here you set up your main machine to have Docker CE and kubectl installed.
+#Ubuntu 18.04 Docker CE setup
+#Here you set up your main machine to have Docker CE and kubectl installed.
 
 {
 # install dependencies
