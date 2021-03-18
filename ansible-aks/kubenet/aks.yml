@@ -10,7 +10,7 @@
 
 - debug: msg="Supported_versions={{versions.azure_aks_versions}}"
 
-- name: Create a workspace with backup enabled
+- name: Create a log analytics workspace
   azure_rm_loganalyticsworkspace:
     resource_group: "{{ aks_rg }}"
     name: "{{ aks_log_analytics_workspace }}"
@@ -41,7 +41,7 @@
           client_id: "{{ lookup('ini', 'client_id section=default file=~/.azure/credentials') }}"
           client_secret: "{{ lookup('ini', 'secret section=default file=~/.azure/credentials') }}"
       network_profile:
-          network_plugin: "{{ cni_plugin }}"
+          network_plugin: "azure"
           pod_cidr: "{{aks_pod_cidr }}"
           docker_bridge_cidr: "{{ aks_cluster_docker_bridge }}"
           dns_service_ip: "{{ aks_cluster_dns }}"
@@ -54,3 +54,142 @@
           log_analytics_workspace_resource_id: "{{ aks_workspace.id }}"
   register: aks_monitor_autoscaler_identity_networkpolicy
   when: has_azure_monitor is true and has_auto_scaler is true and has_managed_identity is true and has_network_policy is true
+
+- name: Create AKS cluster with Monitor Enabled  AutoScaler, Managed Idenity
+  azure_rm_aks:
+      resource_group: "{{ aks_rg }}"
+      name: "{{ aks_cluster_name }}"
+      dns_prefix: "{{ aks_cluster_dns_name }}"
+      #kubernetes_version: "{{ versions.azure_aks_versions[-1] }}"
+      kubernetes_version: "{{aks_version}}"
+      agent_pool_profiles:
+        - count: "{{ node_count }}"
+          name: sysnpool
+          type: "{{ vmsettype }}"
+          vm_size: "{{ node_size }}"
+          vnet_subnet_id: "{{ aks_subnet_info.subnets[0].id }}"
+          enable_auto_scaling: yes
+          max_count: 3
+          min_count: 1
+      linux_profile:
+          admin_username: "{{ aks_cluster_admin_user }}"
+          ssh_key: "{{ lookup('file', '~/.ssh/ansible_rsa.pub') }}"
+      service_principal:
+          client_id: "{{ lookup('ini', 'client_id section=default file=~/.azure/credentials') }}"
+          client_secret: "{{ lookup('ini', 'secret section=default file=~/.azure/credentials') }}"
+      network_profile:
+          network_plugin: "{{ cni_plugin }}"
+          pod_cidr: "{{aks_pod_cidr }}"
+          docker_bridge_cidr: "{{ aks_cluster_docker_bridge }}"
+          dns_service_ip: "{{ aks_cluster_dns }}"
+          service_cidr: "{{ aks_cluster_srv_cidr }}"
+      addon:
+        monitoring: 
+          enabled: yes
+          #log_analytics_workspace_resource_id: "/subscriptions/10dfa491-ff80-4d70-a4ee-9aeb49b8c00e/resourceGroups/{{resource_group_name}}/providers/Microsoft.OperationalInsights/workspaces/myWorkspace"
+          log_analytics_workspace_resource_id: "{{ aks_workspace.id }}"
+  register: aks_monitor_autoscaler_identity_networkpolicy
+  when: has_azure_monitor is true and has_auto_scaler is true and has_managed_identity is true
+
+- name: Create AKS cluster with Monitor Enabled and AutoScaler 
+  azure_rm_aks:
+      resource_group: "{{ aks_rg }}"
+      name: "{{ aks_cluster_name }}"
+      dns_prefix: "{{ aks_cluster_dns_name }}"
+      #kubernetes_version: "{{ versions.azure_aks_versions[-1] }}"
+      kubernetes_version: "{{aks_version}}"
+      agent_pool_profiles:
+        - count: "{{ node_count }}"
+          name: sysnpool
+          type: "{{ vmsettype }}"
+          vm_size: "{{ node_size }}"
+          vnet_subnet_id: "{{ aks_subnet_info.subnets[0].id }}"
+          enable_auto_scaling: yes
+          max_count: 3
+          min_count: 1
+      linux_profile:
+          admin_username: "{{ aks_cluster_admin_user }}"
+          ssh_key: "{{ lookup('file', '~/.ssh/ansible_rsa.pub') }}"
+      service_principal:
+          client_id: "{{ lookup('ini', 'client_id section=default file=~/.azure/credentials') }}"
+          client_secret: "{{ lookup('ini', 'secret section=default file=~/.azure/credentials') }}"
+      network_profile:
+          network_plugin: "{{ cni_plugin }}"
+          pod_cidr: "{{aks_pod_cidr }}"
+          docker_bridge_cidr: "{{ aks_cluster_docker_bridge }}"
+          dns_service_ip: "{{ aks_cluster_dns }}"
+          service_cidr: "{{ aks_cluster_srv_cidr }}"
+      addon:
+        monitoring: 
+          enabled: yes
+          #log_analytics_workspace_resource_id: "/subscriptions/10dfa491-ff80-4d70-a4ee-9aeb49b8c00e/resourceGroups/{{resource_group_name}}/providers/Microsoft.OperationalInsights/workspaces/myWorkspace"
+          log_analytics_workspace_resource_id: "{{ aks_workspace.id }}"
+  register: aks_monitor_autoscaler_identity_networkpolicy
+  when: has_azure_monitor is true and has_auto_scaler is true
+
+- name: Create AKS cluster Managed Identity and Network Policy = Azure
+  azure_rm_aks:
+      resource_group: "{{ aks_rg }}"
+      name: "{{ aks_cluster_name }}"
+      dns_prefix: "{{ aks_cluster_dns_name }}"
+      #kubernetes_version: "{{ versions.azure_aks_versions[-1] }}"
+      kubernetes_version: "{{aks_version}}"
+      agent_pool_profiles:
+        - count: "{{ node_count }}"
+          name: sysnpool
+          type: "{{ vmsettype }}"
+          vm_size: "{{ node_size }}"
+          vnet_subnet_id: "{{ aks_subnet_info.subnets[0].id }}"
+          enable_auto_scaling: yes
+          max_count: 3
+          min_count: 1
+      linux_profile:
+          admin_username: "{{ aks_cluster_admin_user }}"
+          ssh_key: "{{ lookup('file', '~/.ssh/ansible_rsa.pub') }}"
+      service_principal:
+          client_id: "{{ lookup('ini', 'client_id section=default file=~/.azure/credentials') }}"
+          client_secret: "{{ lookup('ini', 'secret section=default file=~/.azure/credentials') }}"
+      network_profile:
+          network_plugin: "azure"
+          pod_cidr: "{{aks_pod_cidr }}"
+          docker_bridge_cidr: "{{ aks_cluster_docker_bridge }}"
+          dns_service_ip: "{{ aks_cluster_dns }}"
+          service_cidr: "{{ aks_cluster_srv_cidr }}"
+          network_policy: azure
+      addon:
+        monitoring: 
+          enabled: yes
+          #log_analytics_workspace_resource_id: "/subscriptions/10dfa491-ff80-4d70-a4ee-9aeb49b8c00e/resourceGroups/{{resource_group_name}}/providers/Microsoft.OperationalInsights/workspaces/myWorkspace"
+          log_analytics_workspace_resource_id: "{{ aks_workspace.id }}"
+  register: aks_monitor_autoscaler_identity_networkpolicy
+  when: has_managed_identity is true and has_network_policy is true
+
+- name: Create AKS cluster withouth monitor
+  azure_rm_aks:
+      resource_group: "{{ aks_rg }}"
+      name: "{{ aks_cluster_name }}"
+      dns_prefix: "{{ aks_cluster_dns_name }}"
+      #kubernetes_version: "{{ versions.azure_aks_versions[-1] }}"
+      kubernetes_version: "{{aks_version}}"
+      agent_pool_profiles:
+        - count: "{{ node_count }}"
+          name: sysnpool
+          type: "{{ vmsettype }}"
+          vm_size: "{{ node_size }}"
+          vnet_subnet_id: "{{ aks_subnet_info.subnets[0].id }}"
+          max_count: 3
+          min_count: 1
+      linux_profile:
+          admin_username: "{{ aks_cluster_admin_user }}"
+          ssh_key: "{{ lookup('file', '~/.ssh/ansible_rsa.pub') }}"
+      service_principal:
+          client_id: "{{ lookup('ini', 'client_id section=default file=~/.azure/credentials') }}"
+          client_secret: "{{ lookup('ini', 'secret section=default file=~/.azure/credentials') }}"
+      network_profile:
+          network_plugin: "{{ cni_plugin }}"
+          pod_cidr: "{{aks_pod_cidr }}"
+          docker_bridge_cidr: "{{ aks_cluster_docker_bridge }}"
+          dns_service_ip: "{{ aks_cluster_dns }}"
+          service_cidr: "{{ aks_cluster_srv_cidr }}"
+  register: aks_monitor_autoscaler_identity_networkpolicy
+  when: has_azure_monitor is false and has_auto_scaler is false and has_managed_identity is false and has_network_policy is false
