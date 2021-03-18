@@ -1,18 +1,18 @@
 - name: Create vnet
   azure_rm_virtualnetwork:
-      resource_group: "{{ vnet_rg }}"
-      name: "{{ aks_vnet }}"
-      location: "{{ resource_group_location }}"
-      address_prefixes: "{{ aks_vnet_cidr }}"
-  register: aks_vnet
+     resource_group: "{{ vnet_rg }}"
+     name: "{{ aks_vnet }}"
+     location: "{{ resource_group_location }}"
+     address_prefixes: "{{ aks_vnet_cidr }}"
+  register: aks_vnet_state
 
 - name: Create subnet
   azure_rm_subnet:
-      resource_group: "{{ subnet_rg }}"
-      name: "{{ aks_snet }}"
-      address_prefix_cidr: "{{ aks_snet_cidr }}"
-      virtual_network_name: "{{ aks_vnet }}"
-  register: aks_subnet
+    resource_group: "{{ subnet_rg }}"
+    name: "{{ aks_snet }}"
+    address_prefix_cidr: "{{ aks_snet_cidr }}"
+    virtual_network_name: "{{ aks_vnet }}"
+  register: aks_subnet_state
 
 - name: Getting SubnetID of a specific subnet
   azure_rm_subnet_info:
