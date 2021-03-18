@@ -20,10 +20,13 @@ curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 # add the Kubernetes repository
 echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
+# list available versions of docker in your repo
+apt-cache madison docker-ce
+# list available versions of docker in your repo
+apt-cache madison kubectl | head -n 5
 # update and install packages
 sudo apt update
-sudo apt install docker-ce=5:20.10.2~3-0~ubuntu-bionic docker-ce-cli=5:20.10.2~3-0~ubuntu-bionic containerd.io kubectl=1.20.2-00 -y
-
+sudo apt install docker-ce=5:20.10.5~3-0~ubuntu-bionic docker-ce-cli=5:20.10.5~3-0~ubuntu-bionic containerd.io kubectl=1.20.4-00 -y 
 # hold them at the current version
 sudo apt-mark hold docker-ce kubectl docker-ce-cli
 }

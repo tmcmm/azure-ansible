@@ -85,7 +85,7 @@
       ssh_password_enabled: false
       ssh_public_keys:
         - path: "{{ ssh_keys_path_dest }}"
-          key_data: "{{ public_ssh_key }}"
+          key_data: "{{ lookup('file', '~/.ssh/ansible_rsa.pub') }}"
       network_interfaces: "{{ vm_nic_name }}"
       image:
         offer: "{{ vm_offer }}"
@@ -98,3 +98,8 @@
           managed_disk_type: "{{ vm_disk_managed_type }}"
           storage_container_name: "{{ vm_disk_storage_container_name }}"
     register: vm01
+
+  - name: Copy to VM docker script install
+    vars:
+      vm_private_key: "{{ lookup('file', '~/.ssh/id_rsa') }}"
+    command: "scp -o StrictHostKeyChecking=no -i {{ lookup('file', '~/.ssh/ansible_rsa') }} docker-ce-setup.sh {{ vm_admin_username }}@{{ output_ip_address.state.ip_address }}:/home/{{ vm_admin_username }}/docker-setup.sh" 
