@@ -1,14 +1,25 @@
 - name: Create vnet
   azure_rm_virtualnetwork:
-      resource_group: "{{ resource_group }}"
-      name: "{{ name }}"
-      address_prefixes_cidr:
-          - 10.0.0.0/8
+      resource_group: "{{ vnet_rg }}"
+      name: "{{ aks_vnet }}"
+      location: "{{ resource_group_location }}"
+      address_prefixes: "{{ aks_vnet_cidr }}"
+  register: aks_vnet
 
 - name: Create subnet
   azure_rm_subnet:
-      resource_group: "{{ resource_group }}"
-      name: "{{ name }}"
-      address_prefix_cidr: 10.240.0.0/16
-      virtual_network_name: "{{ name }}"
-  register: subnet
+      resource_group: "{{ subnet_rg }}"
+      name: "{{ aks_snet }}"
+      address_prefix_cidr: "{{ aks_snet_cidr }}"
+      virtual_network_name: "{{ aks_vnet }}"
+  register: aks_subnet
+
+- name: Getting SubnetID of a specific subnet
+  azure_rm_subnet_info:
+    resource_group: "{{ vnet_rg }}"
+    virtual_network_name: "{{ aks_vnet }}"
+    name: "{{ aks_snet }}"
+  register: aks_subnet_info  
+
+- debug: msg="subnet_id={{aks_subnet_info.subnets[0].id}}"
+

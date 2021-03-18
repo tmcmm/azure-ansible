@@ -1,9 +1,47 @@
 ## RESOUCE VARIABLES
-resource_group: ansible-vm
-resource_group_location: eastus
+resource_group_name: "rg-aks-kubenet-{{purpose}}"
+purpose: "11713"
+resource_group_location: westeurope
+
+## AKS
+has_azure_monitor=: false
+has_auto_scaler: false
+has_managed_identity: false
+has_network_policy: false
+
+aks_cluster_name: "aks-{{purpose}}"
+aks_rg: "{{ resource_group_name }}"
+vmsettype: "availabilityset"
+aks_version: "1.17.13"
+node_size: "standard_ds2_v2"
+user_node_size: "standard_d4s_v3"
+node_count: "3"
+aks_cluster_admin_user: "azureuser"
 
 
 ## NETWORK VARIABLES
+vnet_rg: "{{ resource_group_name }}"
+subnet_rg: "{{ vnet_rg }}"
+cni_plugin: "kubenet"
+aks_vnet: "vnet-full-{{ aks_cluster_name }}"
+aks_vnet_rg: "rg-vnet-full-{{ aks_cluster_name }}"
+aks_vnet_cidr: "10.0.0.0/16"
+aks_snet: "snet-full-{{purpose}}"
+aks_snet_cidr: "10.0.0.0/22"
+aks_pod_cidr: "10.240.0.0/16"
+aks_cluster_srv_cidr: "10.0.4.0/23"
+aks_cluster_dns_name: "{{ aks_cluster_name }}-dns"
+aks_cluster_dns: "10.0.4.10"
+aks_cluster_docker_bridge: "172.17.0.1/16"
+admin_username_ssh_keys_pub: "ssh-rsa aaaab3nzac1yc2eaaaadaqabaaabaqdq+tz0vkk0l7uvlrxbd0yfxbzihwlztdwckc+k0y7b6la34fqcrybursvprj8kwklxoliauopa/orefqhgsdpxolrdyodxjdufy+aroa3w3garymfpzsymxcofqifjpsa+b9kg02epdhpmwfobgnoxwf/sqeyufqd/q1gb5i5y9gbfakafsuoiph4kujuafkmp8qyobqq9ihqmyi2nsllfg1ek6sydgbeal84m1bqgeymsbhd/66pnwbfct59bgo7tgxzdlp0j6qefyd3ipz7yjt9jrgrn+znikmuoc6jwwljuikrlsynkywvcjiqijal2w7zzhisbmdwl1fy03tbf azureuser@azure"
+generic_admin_username: "azureuser"
+vm_subnet_name: "ssh-client"
+vm_snet_cidr: "10.0.6.0/28"
+vm_priv_ip: "10.0.6.4/32"
+## Get my home public ip : curl ifconfig.io
+my_home_public_ip: "94.62.149.32"
+
+
 vnet_name: vm_myVnet
 vnet_address_prefixes: "10.0.0.0/16"
 subnet_name: vm_mySubnet

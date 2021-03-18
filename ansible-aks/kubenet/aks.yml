@@ -1,29 +1,44 @@
+- name: Creating AKS cluster Resource Group
+  azure_rm_resourcegroup:
+    name: "{{ aks_rg }}"
+    location: "{{ resource_group_location }}"
+
 - name: List supported kubernetes version from Azure
   azure_rm_aksversion_info:
-      location: "{{ location }}"
+      location: "{{ resource_group_location }}"
   register: versions
 
-- name: Create AKS cluster with vnet
+- debug: msg="Supported_versions={{versions.azure_aks_versions}}"
+
+- name: Create AKS cluster with Monitor Enabled  AutoScaler, Managed Idenity and Network Policy = Azure
   azure_rm_aks:
-      resource_group: "{{ resource_group }}"
-      name: "{{ name }}"
-      dns_prefix: "{{ name }}"
-      kubernetes_version: "{{ versions.azure_aks_versions[-1] }}"
+      resource_group: "{{ aks_rg }}"
+      name: "{{ aks_cluster_name }}"
+      dns_prefix: "{{ aks_cluster_dns_name }}"
+      #kubernetes_version: "{{ versions.azure_aks_versions[-1] }}"
+      kubernetes_version: "{{aks_version}}"
       agent_pool_profiles:
-        - count: 3
-          name: nodepool1
-          vm_size: Standard_D2_v2
-          vnet_subnet_id: "{{ vnet_subnet_id }}"
+        - count: "{{ node_count }}"
+          name: sysnpool
+          vm_size: "{{ node_size }}"
+          vnet_subnet_id: "{{ aks_subnet_info.subnets[0].id }}"
+          enable_auto_scaling: yes
+          max_count: 3
+          min_count: 1
       linux_profile:
-          admin_username: azureuser
+          admin_username: "{{ aks_cluster_admin_user }}"
           ssh_key: "{{ lookup('file', '~/.ssh/ansible_rsa.pub') }}"
       service_principal:
           client_id: "{{ lookup('ini', 'client_id section=default file=~/.azure/credentials') }}"
           client_secret: "{{ lookup('ini', 'secret section=default file=~/.azure/credentials') }}"
       network_profile:
-          network_plugin: kubenet
-          pod_cidr: 192.168.0.0/16
-          docker_bridge_cidr: 172.17.0.1/16
-          dns_service_ip: 10.0.0.10
-          service_cidr: 10.0.0.0/16
-  register: aks
+          network_plugin: "{{ cni_plugin }}"
+          pod_cidr: "{{aks_pod_cidr }}"
+          docker_bridge_cidr: "{{ aks_cluster_docker_bridge }}"
+          dns_service_ip: "{{ aks_cluster_dns }}"
+          service_cidr: "{{ aks_cluster_srv_cidr }}"
+          network_policy: azure
+      addon:
+        - monitoring: enabled=yes
+  register: aks_monitor_autoscaler_identity_networkpolicy
+  when: has_azure_monitor is true and has_auto_scaler is true and has_managed_identity is true and has_network_policy is true
