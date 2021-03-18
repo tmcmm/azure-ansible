@@ -15,7 +15,7 @@
       resource_group: "{{ resource_group }}"
       name: "{{ vnet_name }}"
       address_prefixes: "{{ vnet_address_prefixes }}"
-    register: virtual_network 
+    register: virtual_network
 
   - name: Add subnet to the virtual network
     azure_rm_subnet:
@@ -41,8 +41,8 @@
   - name: Dump public IP for VM which will be created
     debug:
       msg: "The public IP of your VM is {{ output_ip_address.state.ip_address }}."
-      
-  - name: Create Network Security Group that allows SSH from your provider public IP 
+
+  - name: Create Network Security Group that allows SSH from your provider public IP
     azure_rm_securitygroup:
       resource_group: "{{ resource_group }}"
       name: "{{ network_security_group_name }}"
@@ -57,7 +57,7 @@
           source_address_prefix: "{{ network_provider_public_ip }}"
           destination_address_prefix: "{{ subnet_address_prefixes }}"
           description: "Allow from MY ISP IP"
- 
+
   - name: Create virtual network interface card
     azure_rm_networkinterface:
       resource_group: "{{ resource_group }}"
@@ -83,23 +83,22 @@
       admin_username: "{{ vm_admin_username }}"
       short_hostname: "{{ vm_hostname }}"
       ssh_password_enabled: false
+      disk_size_gb: "{{ vm_disk_size }}"
+      managed_disk_type: "{{ vm_disk_managed_type }}"
+      os_disk_name: "{{ vm_os_disk_name }}"
       ssh_public_keys:
         - path: "{{ ssh_keys_path_dest }}"
-          key_data: "{{ lookup('file', '~/.ssh/ansible_rsa.pub') }}"
+          key_data: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
       network_interfaces: "{{ vm_nic_name }}"
       image:
         offer: "{{ vm_offer }}"
         publisher: "{{ vm_publisher }}"
         sku: "{{ vm_sku }}"
         version: "{{ vm_version }}"
-      data_disks:
-        - lun: 1
-          disk_size_gb: "{{ vm_disk_size }}"
-          managed_disk_type: "{{ vm_disk_managed_type }}"
-          storage_container_name: "{{ vm_disk_storage_container_name }}"
     register: vm01
 
   - name: Copy to VM docker script install
     vars:
       vm_private_key: "{{ lookup('file', '~/.ssh/id_rsa') }}"
-    command: "scp -o StrictHostKeyChecking=no -i {{ lookup('file', '~/.ssh/ansible_rsa') }} docker-ce-setup.sh {{ vm_admin_username }}@{{ output_ip_address.state.ip_address }}:/home/{{ vm_admin_username }}/docker-setup.sh" 
+    command: "scp -o StrictHostKeyChecking=no -i {{ vm_private_key }} docker-ce-setup.sh {{ vm_admin_username }}@{{ output_ip_address.state.ip_address }}:/home/{{ vm_admin_username }}/docker-setup.sh" 
+    register: vm01_docker_ce_setup
