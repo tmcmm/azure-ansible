@@ -10,6 +10,14 @@
 
 - debug: msg="Supported_versions={{versions.azure_aks_versions}}"
 
+- name: Create a workspace with backup enabled
+  azure_rm_loganalyticsworkspace:
+    resource_group: "{{ aks_rg }}"
+    name: "{{ aks_log_analytics_workspace }}"
+  register: aks_workspace
+
+- debug: msg="Workspace={{aks_workspace.id}}"
+
 - name: Create AKS cluster with Monitor Enabled  AutoScaler, Managed Idenity and Network Policy = Azure
   azure_rm_aks:
       resource_group: "{{ aks_rg }}"
@@ -20,6 +28,7 @@
       agent_pool_profiles:
         - count: "{{ node_count }}"
           name: sysnpool
+          type: "{{ vmsettype }}"
           vm_size: "{{ node_size }}"
           vnet_subnet_id: "{{ aks_subnet_info.subnets[0].id }}"
           enable_auto_scaling: yes
@@ -39,6 +48,9 @@
           service_cidr: "{{ aks_cluster_srv_cidr }}"
           network_policy: azure
       addon:
-        - monitoring: enabled=yes
+        monitoring: 
+          enabled: yes
+          #log_analytics_workspace_resource_id: "/subscriptions/10dfa491-ff80-4d70-a4ee-9aeb49b8c00e/resourceGroups/{{resource_group_name}}/providers/Microsoft.OperationalInsights/workspaces/myWorkspace"
+          log_analytics_workspace_resource_id: "{{ aks_workspace.id }}"
   register: aks_monitor_autoscaler_identity_networkpolicy
   when: has_azure_monitor is true and has_auto_scaler is true and has_managed_identity is true and has_network_policy is true

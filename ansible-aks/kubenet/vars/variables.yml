@@ -4,14 +4,16 @@ purpose: "11713"
 resource_group_location: westeurope
 
 ## AKS
-has_azure_monitor=: false
-has_auto_scaler: false
-has_managed_identity: false
-has_network_policy: false
+has_azure_monitor: true
+has_auto_scaler: true
+has_managed_identity: true
+has_network_policy: true
 
 aks_cluster_name: "aks-{{purpose}}"
 aks_rg: "{{ resource_group_name }}"
-vmsettype: "availabilityset"
+aks_log_analytics_workspace: "myLogAnalyticsWorkspace"
+#vmsettype: "AvailabilitySet"
+vmsettype: "VirtualMachineScaleSets"
 aks_version: "1.17.13"
 node_size: "standard_ds2_v2"
 user_node_size: "standard_d4s_v3"
