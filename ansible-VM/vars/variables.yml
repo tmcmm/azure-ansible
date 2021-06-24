@@ -1,6 +1,6 @@
 ## RESOUCE VARIABLES
 resource_group: ansible-vm
-resource_group_location: eastus
+resource_group_location: westeurope
 
 ## NETWORK VARIABLES
 vnet_name: vm_myVnet
@@ -8,15 +8,12 @@ vnet_address_prefixes: "10.0.0.0/16"
 subnet_name: vm_mySubnet
 subnet_address_prefixes: "10.0.24.0/24"
 network_security_group_name:  myNetworkSecurityGroup
-network_vm_public_ip_name: myPublicIP
-network_provider_public_ip: ""
+#curl ifconfig.io
+network_provider_public_ip: "148.71.74.140"
 
 ## VM SSH VARIABLES
-vm_name: vm-01
-vm_nic_name: myNic
 vm_size: Standard_D2s_v3
 vm_admin_username: azureuser
-vm_hostname: "sshclient-{{ vm_name }}"
 ssh_keys_path_dest: "/home/{{ vm_admin_username }}/.ssh/authorized_keys"
 vm_offer: "UbuntuServer"
 vm_publisher: "Canonical"
@@ -24,5 +21,4 @@ vm_sku: "18.04-LTS"
 vm_version: latest
 vm_disk_size: 40
 vm_disk_managed_type: StandardSSD_LRS
-vm_os_disk_name: "{{ vm_name }}_disk_01"
 vm_tags: "env=kubernetes"

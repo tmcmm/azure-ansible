@@ -29,18 +29,27 @@
     azure_rm_publicipaddress:
       resource_group: "{{ resource_group }}"
       allocation_method: Static
-      name: "{{ network_vm_public_ip_name }}"
+      name: "{{ item.publicipname }}"
+    with_items:
+      - { publicipname: masterPublicIP }
+      - { publicipname: node1PublicIP }
+      - { publicipname: node2PublicIP }
     register: output_ip_address
 
-  - name: Sleep for 100 seconds while creating the public ip_address
+  - name: Sleep for 100 seconds while creating the public ip(s)_address
     wait_for:
       timeout: 100
     delegate_to: localhost
     when: output_ip_address is changed
 
   - name: Dump public IP for VM which will be created
-    debug:
-      msg: "The public IP of your VM is {{ output_ip_address.state.ip_address }}."
+    ansible.builtin.debug:
+      msg: The public IP of your VM is "{{ item }}"
+ #     msg: "The public IP of your VM is {{ item.state.ip_address }}"
+    with_items: 
+    - '{{ output_ip_address.results[0].state.ip_address }}'
+    - '{{ output_ip_address.results[1].state.ip_address }}'
+    - '{{ output_ip_address.results[2].state.ip_address }}'
 
   - name: Create Network Security Group that allows SSH from your provider public IP
     azure_rm_securitygroup:
@@ -61,11 +70,15 @@
   - name: Create virtual network interface card
     azure_rm_networkinterface:
       resource_group: "{{ resource_group }}"
-      name: "{{ vm_nic_name }}"
+      name: "{{ item.nicname }}"
       virtual_network: "{{ vnet_name }}"
       subnet: "{{ subnet_name }}"
-      public_ip_name: "{{ network_vm_public_ip_name }}"
+      public_ip_name: "{{ item.publicipname }}"
       security_group: "{{ network_security_group_name }}"
+    with_items:
+      - { nicname: Masternic, publicipname: masterPublicIP }
+      - { nicname: Node1nic, publicipname: node1PublicIP }
+      - { nicname: Node2nic, publicipname: node2PublicIP }
     register: nic_card
 
 #  - name: List all VM's from publisher available in that region
@@ -77,28 +90,43 @@
   - name: Create VM
     azure_rm_virtualmachine:
       resource_group: "{{ resource_group }}"
-      name: "{{ vm_name }}"
+      name: "{{ item.name }}"
       tags: "{{ vm_tags }}"
       vm_size: "{{ vm_size }}"
       admin_username: "{{ vm_admin_username }}"
-      short_hostname: "{{ vm_hostname }}"
+      short_hostname: "{{ item.vm_hostname }}"
       ssh_password_enabled: false
-      disk_size_gb: "{{ vm_disk_size }}"
-      managed_disk_type: "{{ vm_disk_managed_type }}"
-      os_disk_name: "{{ vm_os_disk_name }}"
+      os_disk_size_gb: "{{ item.vmdisksize }}"
+      managed_disk_type: "{{ item.vmdiskmanagedtype }}"
+      os_disk_name: "{{ item.vmdiskname }}"
       ssh_public_keys:
         - path: "{{ ssh_keys_path_dest }}"
           key_data: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
-      network_interfaces: "{{ vm_nic_name }}"
+      network_interfaces: "{{ item.nicname }}"
       image:
         offer: "{{ vm_offer }}"
         publisher: "{{ vm_publisher }}"
         sku: "{{ vm_sku }}"
         version: "{{ vm_version }}"
-    register: vm01
+    with_items:
+      - { name: master, vmdiskname: master_disk, vm_hostname: master-01, nicname: Masternic, vmdisksize: 40, vmdiskmanagedtype: StandardSSD_LRS }
+      - { name: node-01, vmdiskname: node1_disk, vm_hostname: worker-02, nicname: Node1nic, vmdisksize: 40, vmdiskmanagedtype: StandardSSD_LRS }
+      - { name: node-02, vmdiskname: node2_disk, vm_hostname: worker-03, nicname: Node2nic, vmdisksize: 40, vmdiskmanagedtype: StandardSSD_LRS }
+    register: vms
 
-  - name: Copy to VM docker script install
-    vars:
-      vm_private_key: "{{ lookup('file', '~/.ssh/id_rsa') }}"
-    command: "scp -o StrictHostKeyChecking=no -i {{ vm_private_key }} docker-ce-setup.sh {{ vm_admin_username }}@{{ output_ip_address.state.ip_address }}:/home/{{ vm_admin_username }}/docker-setup.sh" 
-    register: vm01_docker_ce_setup
+ # - name: Copy to VM docker script install
+ #   vars:
+ #     vm_private_key: "{{ lookup('file', '~/.ssh/id_rsa') }}"
+ #   command: "scp -o StrictHostKeyChecking=no -i {{ vm_private_key }} docker-ce-setup.sh {{ vm_admin_username }}@{{ item[0] }}:/home/{{ vm_admin_username }}/docker-setup.sh"
+ #   with_items: 
+ #   - '{{ output_ip_address.results[0].state.ip_address }}'
+ #   - '{{ output_ip_address.results[1].state.ip_address }}'
+ #   register: vms_docker_ce_setup
+
+  - name: Dump public IP for VM which will be created
+    ansible.builtin.debug:
+      msg: The public IP of your VM is "{{ item }}"
+    with_items: 
+    - '{{ output_ip_address.results[0].state.ip_address }}'
+    - '{{ output_ip_address.results[1].state.ip_address }}'
+    - '{{ output_ip_address.results[2].state.ip_address }}'
