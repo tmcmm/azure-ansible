@@ -17,13 +17,6 @@
       address_prefixes: "{{ vnet_address_prefixes }}"
     register: virtual_network
 
-  - name: Add subnet to the virtual network
-    azure_rm_subnet:
-      resource_group: "{{ resource_group }}"
-      name: "{{ subnet_name }}"
-      address_prefix: "{{ subnet_address_prefixes }}"
-      virtual_network: "{{ vnet_name }}"
-    register: subnet_network
 
   - name: Create public IP address
     azure_rm_publicipaddress:
@@ -80,6 +73,16 @@
       - { nicname: Node1nic, publicipname: node1PublicIP }
       - { nicname: Node2nic, publicipname: node2PublicIP }
     register: nic_card
+
+  - name: Add subnet to the virtual network
+    azure_rm_subnet:
+      resource_group: "{{ resource_group }}"
+      name: "{{ subnet_name }}"
+      address_prefix: "{{ subnet_address_prefixes }}"
+      virtual_network: "{{ vnet_name }}"
+      security_group:
+        name: "{{ network_security_group_name }}"
+    register: subnet_network
 
 #  - name: List all VM's from publisher available in that region
 #    community.azure.azure_rm_virtualmachineimage_info:
