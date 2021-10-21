@@ -25,11 +25,12 @@ ansible-galaxy collection install community.azure
 
 Creating SP:
 ```
-az ad sp create-for-rbac --name svc-ansible-azure --password 'ALovelyComplexPasswor@'
+az ad sp create-for-rbac --name svc-ansible-azure --role="Contributor" --scopes="/subscriptions/$SUBS_ID" --skip-assignment >> sp-credentials-ansible.yaml 2>&1
+
 ```
-list your subscription:
+list your subscription id :
 ```
-az account list (for listing the subscriptionID)
+az account list -o table | grep 'subs_name' | awk '{print $ 3}'
 ```
 * AZURE_SUBSCRIPTION_ID ==> subscription_id <br>
 * AZURE_CLIENT_ID ==> appId <br>
@@ -37,7 +38,7 @@ az account list (for listing the subscriptionID)
 * AZURE_TENANT ==> tenant <br>
 
 
-credentials file:
+Store the following under credentials file located in ~/.azure/credentials:
 ```
 [default]
 subscription_id=10dfa491-xxxxx-xxxx-a4ee-9aeb49b8c00e
