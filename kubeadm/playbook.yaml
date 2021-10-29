@@ -1,7 +1,7 @@
 - hosts: all
   become: yes
-  include_vars:
-    file: vars/main.yml
+  vars_files:
+  - vars/main.yml
   vars:
     kubernetes_allow_pods_on_master: true
 

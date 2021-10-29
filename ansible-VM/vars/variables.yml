@@ -3,11 +3,11 @@ resource_group: ansible-vm
 resource_group_location: westeurope
 
 ## NETWORK VARIABLES
-vnet_name: vm_myVnet
+vnet_name: vm_vnet
 vnet_address_prefixes: "10.0.0.0/16"
-subnet_name: vm_mySubnet
+subnet_name: vm_subnet
 subnet_address_prefixes: "10.0.24.0/24"
-network_security_group_name:  myNetworkSecurityGroup
+network_security_group_name:  vmSshNSG
 #curl ifconfig.io
 network_provider_public_ip: "148.71.74.140"
 
@@ -22,3 +22,5 @@ vm_version: latest
 vm_disk_size: 40
 vm_disk_managed_type: StandardSSD_LRS
 vm_tags: "env=kubernetes"
+
+###############################################################################

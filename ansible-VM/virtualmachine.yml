@@ -17,7 +17,6 @@
       address_prefixes: "{{ vnet_address_prefixes }}"
     register: virtual_network
 
-
   - name: Create public IP address
     azure_rm_publicipaddress:
       resource_group: "{{ resource_group }}"
@@ -60,6 +59,16 @@
           destination_address_prefix: "{{ subnet_address_prefixes }}"
           description: "Allow from MY ISP IP"
 
+  - name: Add subnet to the virtual network
+    azure_rm_subnet:
+      resource_group: "{{ resource_group }}"
+      name: "{{ subnet_name }}"
+      address_prefix: "{{ subnet_address_prefixes }}"
+      virtual_network: "{{ vnet_name }}"
+      security_group:
+        name: "{{ network_security_group_name }}"
+    register: subnet_network
+
   - name: Create virtual network interface card
     azure_rm_networkinterface:
       resource_group: "{{ resource_group }}"
@@ -73,16 +82,6 @@
       - { nicname: Node1nic, publicipname: node1PublicIP }
       - { nicname: Node2nic, publicipname: node2PublicIP }
     register: nic_card
-
-  - name: Add subnet to the virtual network
-    azure_rm_subnet:
-      resource_group: "{{ resource_group }}"
-      name: "{{ subnet_name }}"
-      address_prefix: "{{ subnet_address_prefixes }}"
-      virtual_network: "{{ vnet_name }}"
-      security_group:
-        name: "{{ network_security_group_name }}"
-    register: subnet_network
 
 #  - name: List all VM's from publisher available in that region
 #    community.azure.azure_rm_virtualmachineimage_info:
@@ -125,11 +124,12 @@
  #   - '{{ output_ip_address.results[0].state.ip_address }}'
  #   - '{{ output_ip_address.results[1].state.ip_address }}'
  #   register: vms_docker_ce_setup
-
-  - name: Dump public IP for VM which will be created
+  - name: Dump public IP and Hostname for VM which will be created
     ansible.builtin.debug:
-      msg: The public IP of your VM is "{{ item }}"
+      msg: The public IP and Name of your VM is "{{ item }}"
     with_items: 
-    - '{{ output_ip_address.results[0].state.ip_address }}'
-    - '{{ output_ip_address.results[1].state.ip_address }}'
-    - '{{ output_ip_address.results[2].state.ip_address }}'
+    - 'IpAddress: {{ output_ip_address.results[0].state.ip_address }} Hostname: {{ vms.results[0].ansible_facts.azure_vm.name }}'
+    - 'IpAddress: {{ output_ip_address.results[1].state.ip_address }} Hostname: {{ vms.results[1].ansible_facts.azure_vm.name }}'
+    - 'IpAddress: {{ output_ip_address.results[2].state.ip_address }} Hostname: {{ vms.results[2].ansible_facts.azure_vm.name }}'
+    tags:
+      - dump
