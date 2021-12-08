@@ -15,7 +15,7 @@
     delay: 10
 
   - name: Display the public IP address of the network.
-    debug: msg="My_Public_IP-{{ public_ip.json.ip }}"
+    debug: msg="My_Public_IP={{ public_ip.json.ip }}"
 
   - name: Create resource group
     azure_rm_resourcegroup:
@@ -67,7 +67,7 @@
           access: Allow
           priority: 1001
           direction: Inbound
-          source_address_prefix: "{{ public_ip }}/32"
+          source_address_prefix: "{{ public_ip.json.ip }}/32"
           destination_address_prefix: "{{ subnet_address_prefixes }}"
           description: "Allow from MY ISP IP"
 
