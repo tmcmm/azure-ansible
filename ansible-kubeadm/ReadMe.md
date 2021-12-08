@@ -51,13 +51,13 @@ tenant=72f988bf-xxxx-41af-xxxx-2d7cd011db47
 ansible-galaxy install geerlingguy.kubernetes
 ansible-galaxy install geerlingguy.docker
 ```
-###  Run the playbooks
+### Run the playbooks
 
 ```
 ansible-playbook main.yml -i hosts.ini
 ```
 
-Delete resource-groups:
+### Delete resource-groups:
 ```
 ansible-playbook delete_rg.yml --extra-vars "name=resource_group_name"
 ```
