@@ -37,7 +37,7 @@ az account list (for listing the subscriptionID)
 * AZURE_TENANT ==> tenant <br>
 
 
-credentials file:
+Store the following under credentials file located in ~/.azure/credentials:
 ```
 [default]
 subscription_id=10dfa491-xxxxx-xxxx-a4ee-9aeb49b8c00e
