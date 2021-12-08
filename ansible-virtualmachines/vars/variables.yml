@@ -1,5 +1,5 @@
 ## RESOUCE VARIABLES
-resource_group: ansible-vm
+resource_group: kubeadm-cka
 resource_group_location: westeurope
 
 ## NETWORK VARIABLES
@@ -7,9 +7,9 @@ vnet_name: vm_vnet
 vnet_address_prefixes: "10.0.0.0/16"
 subnet_name: vm_subnet
 subnet_address_prefixes: "10.0.24.0/24"
-network_security_group_name:  vmSshNSG
-#curl ifconfig.io
-network_provider_public_ip: "148.71.74.140"
+network_security_group_name: vmSshNSG
+# curl ifconfig.io
+#network_provider_public_ip: "PUBLIC_IP_OF_PROVIDER"
 
 ## VM SSH VARIABLES
 vm_size: Standard_D2s_v3

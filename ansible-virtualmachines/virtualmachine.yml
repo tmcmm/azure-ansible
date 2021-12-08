@@ -4,6 +4,7 @@
   vars_files:
     - vars/variables.yml
   tasks:
+  - debug: msg="hostname={{ansible_hostname}} network_provider_public_ip={{ansible_default_ipv4.address}} "
   - name: Create resource group
     azure_rm_resourcegroup:
       name: "{{ resource_group }}"
