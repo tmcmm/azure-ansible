@@ -116,14 +116,6 @@
       - { name: node-02, vmdiskname: node2_disk, vm_hostname: worker-03, nicname: Node2nic, vmdisksize: 40, vmdiskmanagedtype: StandardSSD_LRS }
     register: vms
 
- # - name: Copy to VM docker script install
- #   vars:
- #     vm_private_key: "{{ lookup('file', '~/.ssh/id_rsa') }}"
- #   command: "scp -o StrictHostKeyChecking=no -i {{ vm_private_key }} docker-ce-setup.sh {{ vm_admin_username }}@{{ item[0] }}:/home/{{ vm_admin_username }}/docker-setup.sh"
- #   with_items: 
- #   - '{{ output_ip_address.results[0].state.ip_address }}'
- #   - '{{ output_ip_address.results[1].state.ip_address }}'
- #   register: vms_docker_ce_setup
   - name: Dump public IP and Hostname for VM which will be created
     ansible.builtin.debug:
       msg: The public IP and Name of your VM is "{{ item }}"
