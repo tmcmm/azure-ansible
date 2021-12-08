@@ -4,7 +4,19 @@
   vars_files:
     - vars/variables.yml
   tasks:
-  - debug: msg="hostname={{ansible_hostname}} network_provider_public_ip={{ansible_default_ipv4.address}} "
+  - name: Get the public IP address of the network.
+    uri:
+      url: https://api.ipify.org?format=json
+      method: Get
+    changed_when: false
+    register: public_ip
+    until: public_ip.status == 200
+    retries: 6
+    delay: 10
+
+  - name: Display the public IP address of the network.
+    debug: msg="My_Public_IP-{{ public_ip.json.ip }}"
+
   - name: Create resource group
     azure_rm_resourcegroup:
       name: "{{ resource_group }}"
@@ -38,7 +50,6 @@
   - name: Dump public IP for VM which will be created
     ansible.builtin.debug:
       msg: The public IP of your VM is "{{ item }}"
- #     msg: "The public IP of your VM is {{ item.state.ip_address }}"
     with_items: 
     - '{{ output_ip_address.results[0].state.ip_address }}'
     - '{{ output_ip_address.results[1].state.ip_address }}'
@@ -56,7 +67,7 @@
           access: Allow
           priority: 1001
           direction: Inbound
-          source_address_prefix: "{{ network_provider_public_ip }}"
+          source_address_prefix: "{{ public_ip }}/32"
           destination_address_prefix: "{{ subnet_address_prefixes }}"
           description: "Allow from MY ISP IP"
 
