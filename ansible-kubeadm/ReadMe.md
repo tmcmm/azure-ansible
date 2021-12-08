@@ -46,7 +46,7 @@ secret=xxxxxxxxx.O_-e3vWPb-iKAeM
 tenant=72f988bf-xxxx-41af-xxxx-2d7cd011db47
 ```
 
-### Install the required roles
+### Install the required roles if you want to use the default role for kubeadm
 ```
 ansible-galaxy install geerlingguy.kubernetes
 ansible-galaxy install geerlingguy.docker
@@ -54,7 +54,7 @@ ansible-galaxy install geerlingguy.docker
 ###  Run the playbooks
 
 ```
-ansible-playbook playbook.yml -i hosts.ini
+ansible-playbook main.yml -i hosts.ini
 ```
 
 Delete resource-groups:
