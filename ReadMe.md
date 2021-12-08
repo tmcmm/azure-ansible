@@ -15,7 +15,7 @@ Change the variables.yml file accordingly to the variables you want to use.
 - Create an SP (Service Principal) capable of creating the Azure Objects
 - Create the file credentials inside /home/user/.azure/
 
-Install Azure modules and community modules:
+__Install Azure modules and community modules:__
 ```
 ansible-galaxy install azure.azure_preview_modules   
 wget -nv -q https://raw.githubusercontent.com/ansible-collections/azure/dev/requirements-azure.txt
@@ -30,6 +30,7 @@ az account list -o table | grep 'your_subs_name' | awk '{print $3}'
 ```
 __Creating SP:__
 ```
+SUBS_ID='output from above'
 az ad sp create-for-rbac --name svc-ansible-azure --role="Contributor" --scopes="/subscriptions/$SUBS_ID" --skip-assignment >> sp-credentials-ansible.yaml 2>&1
 ```
 * AZURE_SUBSCRIPTION_ID ==> subscription_id <br>
