@@ -23,22 +23,21 @@ pip3 install -r requirements-azure.txt
 ansible-galaxy collection install community.azure
 ```
 
-Creating SP:
+__list your subscription id :__
+```
+az account show --query id --output tsv
+az account list -o table | grep 'your_subs_name' | awk '{print $3}'
+```
+__Creating SP:__
 ```
 az ad sp create-for-rbac --name svc-ansible-azure --role="Contributor" --scopes="/subscriptions/$SUBS_ID" --skip-assignment >> sp-credentials-ansible.yaml 2>&1
-
-```
-list your subscription id :
-```
-az account list -o table | grep 'subs_name' | awk '{print $ 3}'
 ```
 * AZURE_SUBSCRIPTION_ID ==> subscription_id <br>
 * AZURE_CLIENT_ID ==> appId <br>
 * AZURE_SECRET ==> password <br>
 * AZURE_TENANT ==> tenant <br>
 
-
-Store the following under credentials file located in ~/.azure/credentials:
+__Store the following under credentials file located in ~/.azure/credentials:__
 ```
 [default]
 subscription_id=10dfa491-xxxxx-xxxx-a4ee-9aeb49b8c00e
