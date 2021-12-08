@@ -28,6 +28,6 @@
 
 - name: Add Kubernetes apt preferences file to pin a version.
   template:
-    src: apt-preferences-kubernetes.j2
+    src: ../templates/apt-preferences-kubernetes.j2
     dest: /etc/apt/preferences.d/kubernetes
     mode: 0644

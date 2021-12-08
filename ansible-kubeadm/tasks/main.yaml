@@ -5,21 +5,23 @@
   become_user: root
   gather_facts: yes
   vars_files:
-  - vars/main.yml
+  - ../default/main.yml
   vars:
     kubernetes_allow_pods_on_master: true
 
   tasks:
   - name: Include OS-specific variables.
-    include_vars: "{{ ansible_os_family }}.yml"
+    include_vars: "../vars/{{ ansible_os_family }}.yaml"
 
   - name: Make the Swap inactive
     command: swapoff -a 
 
   - name: disable swap
+    become: yes
+    become_method: sudo
     shell: |
-            sudo swapoff -a
-            sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+            swapoff -a
+            sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
       
   - name: create the kube user account
     user: name=kube append=yes state=present createhome=yes shell=/bin/bash
@@ -33,7 +35,7 @@
   - name: set up authorized keys for the kube user
     authorized_key: user=kube key="{{item}}"
     with_file:
-      - "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      - ~/.ssh/id_rsa.pub
 
   - include_tasks: setup-RedHat.yaml
     when: ansible_os_family == 'RedHat'
@@ -54,9 +56,11 @@
              br_netfilter
 
   - name: modprobe
+    become: yes
+    become_method: sudo
     shell: |
-           sudo modprobe overlay
-           sudo modprobe br_netfilter
+           modprobe overlay
+           modprobe br_netfilter
 
   - name: Set system configurations for Kubernetes networking
     file:
@@ -72,7 +76,9 @@
              net.bridge.bridge-nf-call-ip6tables = 1
 
   - name: Apply new settings
-    command: sudo sysctl --system
+    become: yes
+    become_method: sudo
+    command: sysctl --system
 
   - name: Install Kubernetes packages.
     package:
@@ -90,46 +96,65 @@
     when: ansible_os_family == 'Debian'
 
   - name: install containerd
+    become: yes
+    become_method: sudo
     shell: |
-           sudo yum update && sudo yum install -y containerd
-           sudo mkdir -p /etc/containerd
-           sudo containerd config default | sudo tee /etc/containerd/config.toml
-           sudo systemctl restart containerd
+           yum update && sudo yum install -y containerd
+           mkdir -p /etc/containerd
+           containerd config default | sudo tee /etc/containerd/config.toml
+           systemctl restart containerd
     when: ansible_os_family == 'RedHat'
   
-- include_tasks: sysctl-setup.yaml
+  - include_tasks: sysctl-setup.yaml
 
-- name: Ensure kubelet is started and enabled at boot.
-  service:
-    name: kubelet
-    state: started
-    enabled: true
+  - name: Ensure kubelet is started and enabled at boot.
+    service:
+      name: kubelet
+      state: started
+      enabled: true
 
-- name: Check if Kubernetes has already been initialized.
-  stat:
-    path: /etc/kubernetes/admin.conf
-  register: kubernetes_init_stat
+  - name: Check if Kubernetes has already been initialized.
+    stat:
+      path: /etc/kubernetes/admin.conf
+    register: kubernetes_init_stat
 
 # Set up master.
-- include_tasks: master-setup.yaml
-  when: kubernetes_role == 'master'
+  - include_tasks: master-setup.yaml
+    when: kubernetes_role == 'master'
 
 # Set up nodes.
-- name: Get the kubeadm join command from the Kubernetes master.
-  command: kubeadm token create --print-join-command
-  changed_when: false
-  when: kubernetes_role == 'master'
-  register: kubernetes_join_command_result
+  - name: Get the kubeadm join command from the Kubernetes master.
+    command: kubeadm token create --print-join-command
+    changed_when: false
+    when: kubernetes_role == 'master'
+    register: kubernetes_join_command_result
 
-- name: Set the kubeadm join command globally.
-  set_fact:
-    kubernetes_join_command: >
-      {{ kubernetes_join_command_result.stdout }}
-      {{ kubernetes_join_command_extra_opts }}
-  when: kubernetes_join_command_result.stdout is defined
-  delegate_to: "{{ item }}"
-  delegate_facts: true
-  with_items: "{{ groups['all'] }}"
+  - name: Set the kubeadm join command globally.
+    set_fact:
+      kubernetes_join_command: >
+        {{ kubernetes_join_command_result.stdout }}
+        {{ kubernetes_join_command_extra_opts }}
+    when: kubernetes_join_command_result.stdout is defined
+    delegate_to: "{{ item }}"
+    delegate_facts: true
+    with_items: "{{ groups['all'] }}"
 
-- include_tasks: node-setup.yaml
-  when: kubernetes_role == 'node'
+  - include_tasks: node-setup.yaml
+    when: kubernetes_role == 'node'
+
+  - name: Change Role on the worker nodes.
+    remote_user: kube
+    command: "kubectl label nodes worker-02 worker-03 node-role.kubernetes.io/worker=worker"
+  
+  - name: Copy file with owner and permission, using symbolic representation
+    ansible.builtin.copy:
+      src: metric-server.yaml
+      dest: /home/kube/metric-server.yaml
+      owner: kube
+      group: kube
+      mode: u=rw,g=r,o=r
+
+  - name: Install Metric Server
+    remote_user: kube
+    command: "kubectl aaply -f metric-server.yaml"  
+    
