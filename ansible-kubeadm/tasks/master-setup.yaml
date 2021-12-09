@@ -13,9 +13,7 @@
   command: >
     kubeadm init
     --config {{ kubernetes_kubeadm_kubelet_config_file_path }}
-    {{ kubernetes_kubeadm_init_extra_opts }} 
-    --pod-network-cidr {{ kubernetes_pod_network_cidr }}
-    --apiserver-advertise-address {{ kubernetes_api_server_ip }}
+    {{ kubernetes_kubeadm_init_extra_opts }}
   register: kubeadmin_init
   when: (not kubernetes_init_stat.stat.exists) and (kubernetes_ignore_preflight_errors is not defined)
 
@@ -24,7 +22,7 @@
     kubeadm init
     --config {{ kubernetes_kubeadm_kubelet_config_file_path }}
     --ignore-preflight-errors={{ kubernetes_ignore_preflight_errors }}
-    {{ kubernetes_kubeadm_init_extra_opts }}
+    {{ kubernetes_kubeadm_init_extra_opts }} --cri-socket  /run/containerd/containerd.sock --upload-certs
   register: kubeadmin_init
   when: (not kubernetes_init_stat.stat.exists) and (kubernetes_ignore_preflight_errors is defined)
 
@@ -34,21 +32,20 @@
     verbosity: 2
   when: not kubernetes_init_stat.stat.exists
 
-- name: Copy join command to local file.
-  local_action: copy content="{{ kubeadmin_init.stdout_lines[0] }}" dest="/tmp/kubernetes_join_command" mode=0777
-
 - name: Ensure .kube directory exists.
   file:
-    path: ~/.kube
+    path: /home/kube/.kube
     state: directory
     mode: 0755
 
 - name: Symlink the kubectl admin.conf to ~/.kube/conf.
   file:
     src: /etc/kubernetes/admin.conf
-    dest: ~/.kube/config
+    dest: /home/kube/.kube/config
     state: link
     mode: 0644
+
+- pause: seconds=10
 
 - name: Configure Flannel networking.
   command: "{{ item }}"
