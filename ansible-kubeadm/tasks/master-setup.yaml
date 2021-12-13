@@ -38,16 +38,20 @@
     state: directory
     mode: 0755
 
-- name: Symlink the kubectl admin.conf to ~/.kube/conf.
-  file:
+- name: Copy the kubectl admin.conf to ~/.kube/conf.
+  become: yes
+  become_method: sudo
+  copy:
     src: /etc/kubernetes/admin.conf
     dest: /home/kube/.kube/config
-    state: link
+    remote_src: yes
     mode: 0644
 
 - pause: seconds=10
 
 - name: Configure Flannel networking.
+  become: yes
+  become_user: kube
   command: "{{ item }}"
   with_items:
     - kubectl apply -f {{ kubernetes_flannel_manifest_file_rbac }}
@@ -57,6 +61,8 @@
   when: kubernetes_pod_network.cni == 'flannel'
 
 - name: Configure Calico networking.
+  become: yes
+  become_user: kube
   command: "{{ item }}"
   with_items:
     - kubectl apply -f {{ kubernetes_calico_manifest_file }}
@@ -65,12 +71,16 @@
   when: kubernetes_pod_network.cni == 'calico'
 
 - name: Get Kubernetes version for Weave installation.
+  become: yes
+  become_user: kube
   shell: kubectl version | base64 | tr -d '\n'
   changed_when: false
   register: kubectl_version
   when: kubernetes_pod_network.cni == 'weave'
 
 - name: Configure Weave networking.
+  become: yes
+  become_user: kube
   command: "{{ item }}"
   with_items:
     - "kubectl apply -f https://cloud.weave.works/k8s/net?k8s-version={{ kubectl_version.stdout_lines[0] }}"
@@ -81,12 +91,16 @@
 # TODO: Check if taint exists with something like `kubectl describe nodes`
 # instead of using kubernetes_init_stat.stat.exists check.
 - name: Allow pods on master node (if configured).
+  become: yes
+  become_user: kube
   command: "kubectl taint nodes --all node-role.kubernetes.io/master-"
   when:
     - kubernetes_allow_pods_on_master | bool
     - not kubernetes_init_stat.stat.exists
 
 - name: Configure kubectl command auto-completion.
+  become: yes
+  become_user: kube
   lineinfile:
     dest: /home/kube/.bashrc
     line: 'source <(kubectl completion bash)'

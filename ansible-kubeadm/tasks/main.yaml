@@ -127,7 +127,7 @@
 # Set up nodes.
   - name: Get the kubeadm join command from the Kubernetes master.
     command: kubeadm token create --print-join-command
-    changed_when: false
+    # changed_when: false
     when: kubernetes_role == 'master'
     register: kubernetes_join_command_result
 
@@ -136,27 +136,36 @@
       kubernetes_join_command: >
         {{ kubernetes_join_command_result.stdout }}
         {{ kubernetes_join_command_extra_opts }}
-    when: kubernetes_join_command_result.stdout is defined
+    #when: kubernetes_join_command_result.stdout is defined
+    when: kubernetes_join_command_result is changed
     delegate_to: "{{ item }}"
     delegate_facts: true
     with_items: "{{ groups['all'] }}"
-
+  
   - include_tasks: node-setup.yaml
     when: kubernetes_role == 'node'
 
   - name: Change Role on the worker nodes.
-    remote_user: kube
+    become: yes
+    become_user: kube
+    run_once: true 
+    ignore_errors: yes
     command: "kubectl label nodes worker-02 worker-03 node-role.kubernetes.io/worker=worker"
+    
   
-  - name: Copy file with owner and permission, using symbolic representation
+  - name: Copy metric serverl yaml file with owner and permission.
     ansible.builtin.copy:
       src: metric-server.yaml
       dest: /home/kube/metric-server.yaml
       owner: kube
       group: kube
       mode: u=rw,g=r,o=r
+    when: kubernetes_role == 'master'
 
   - name: Install Metric Server
-    remote_user: kube
-    command: "kubectl aaply -f metric-server.yaml"  
+    become: yes
+    become_user: kube
+    run_once: true
+    command: "kubectl apply -f /home/kube/metric-server.yaml" 
+    when: kubernetes_role == 'master' 
     
