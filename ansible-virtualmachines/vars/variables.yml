@@ -1,5 +1,5 @@
 ## RESOUCE VARIABLES
-resource_group: kubeadm-cka
+resource_group: kubeadm-cks
 resource_group_location: westeurope
 
 ## NETWORK VARIABLES
@@ -13,11 +13,13 @@ network_security_group_name: vmSshNSG
 
 ## VM SSH VARIABLES
 vm_size: Standard_D2s_v3
-vm_admin_username: azureuser
+vm_admin_username: kube
 ssh_keys_path_dest: "/home/{{ vm_admin_username }}/.ssh/authorized_keys"
-vm_offer: "UbuntuServer"
+#vm_offer: "UbuntuServer"
+vm_offer: "0001-com-ubuntu-server-focal"
 vm_publisher: "Canonical"
-vm_sku: "18.04-LTS"
+#vm_sku: "18.04-LTS"
+vm_sku: "20_04-lts-gen2"
 vm_version: latest
 vm_disk_size: 40
 vm_disk_managed_type: StandardSSD_LRS

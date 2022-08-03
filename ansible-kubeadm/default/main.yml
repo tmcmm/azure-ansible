@@ -40,11 +40,11 @@ kubernetes_config_cluster_configuration:
 
 kubernetes_pod_network:
   # Flannel CNI.
-  cni: 'flannel'
-  cidr: '10.244.0.0/16'
+  # cni: 'flannel'
+  # cidr: '10.244.0.0/16'
   # Calico CNI.
-  #cni: 'calico'
-  #cidr: '192.168.0.0/16'
+  cni: 'calico'
+  cidr: '192.168.0.0/16'
   # Weave CNI.
   #cni: 'weave'
   #cidr: '10.244.0.0/16'
@@ -56,7 +56,8 @@ kubernetes_ignore_preflight_errors: 'all'
 kubernetes_apt_release_channel: main
 # Note that xenial repo is used for all Debian derivatives at this time.
 kubernetes_apt_repository: "deb http://apt.kubernetes.io/ kubernetes-xenial {{ kubernetes_apt_release_channel }}"
-docker_apt_repository: "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+#docker_apt_repository: "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+docker_apt_repository: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
 
 kubernetes_apt_ignore_key_error: false
 

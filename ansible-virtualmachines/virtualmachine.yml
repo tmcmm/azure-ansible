@@ -37,8 +37,8 @@
       name: "{{ item.publicipname }}"
     with_items:
       - { publicipname: masterPublicIP }
-      - { publicipname: node1PublicIP }
-      - { publicipname: node2PublicIP }
+      - { publicipname: worker1PublicIP }
+      - { publicipname: worker2PublicIP }
     register: output_ip_address
 
   - name: Sleep for 100 seconds while creating the public ip(s)_address
@@ -91,8 +91,8 @@
       security_group: "{{ network_security_group_name }}"
     with_items:
       - { nicname: Masternic, publicipname: masterPublicIP }
-      - { nicname: Node1nic, publicipname: node1PublicIP }
-      - { nicname: Node2nic, publicipname: node2PublicIP }
+      - { nicname: Node1nic, publicipname: worker1PublicIP }
+      - { nicname: Node2nic, publicipname: worker2PublicIP }
     register: nic_card
 
 #  - name: List all VM's from publisher available in that region
@@ -124,8 +124,8 @@
         version: "{{ vm_version }}"
     with_items:
       - { name: master, vmdiskname: master_disk, vm_hostname: master-01, nicname: Masternic, vmdisksize: 40, vmdiskmanagedtype: StandardSSD_LRS }
-      - { name: node-01, vmdiskname: node1_disk, vm_hostname: worker-02, nicname: Node1nic, vmdisksize: 40, vmdiskmanagedtype: StandardSSD_LRS }
-      - { name: node-02, vmdiskname: node2_disk, vm_hostname: worker-03, nicname: Node2nic, vmdisksize: 40, vmdiskmanagedtype: StandardSSD_LRS }
+      - { name: worker-01, vmdiskname: worker1_disk, vm_hostname: worker-02, nicname: Node1nic, vmdisksize: 40, vmdiskmanagedtype: StandardSSD_LRS }
+      - { name: worker-02, vmdiskname: worker2_disk, vm_hostname: worker-03, nicname: Node2nic, vmdisksize: 40, vmdiskmanagedtype: StandardSSD_LRS }
     register: vms
 
   - name: Dump public IP and Hostname for VM which will be created

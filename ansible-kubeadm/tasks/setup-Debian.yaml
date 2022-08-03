@@ -13,11 +13,18 @@
       - software-properties-common
     state: present
 
-- name: Add Kubernetes apt key.
+- name: Add Kubernetes GPG apt key.
   apt_key:
     url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
     state: present
   register: add_repository_key
+  ignore_errors: "{{ kubernetes_apt_ignore_key_error }}"
+
+- name: Add Docker GPG apt key.
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  register: add_repository_key_docker
   ignore_errors: "{{ kubernetes_apt_ignore_key_error }}"
 
 - name: Add Kubernetes repository.
@@ -26,8 +33,12 @@
     state: present
     update_cache: true
 
+- name: Add Docker repository.
+  apt_repository:
+    repo: "{{ docker_apt_repository }}"
+    state: present
+
 - name: Add Kubernetes apt preferences file to pin a version.
   template:
     src: ../templates/apt-preferences-kubernetes.j2
     dest: /etc/apt/preferences.d/kubernetes
-    mode: 0644
