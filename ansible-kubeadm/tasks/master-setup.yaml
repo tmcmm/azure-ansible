@@ -22,7 +22,8 @@
     kubeadm init
     --config {{ kubernetes_kubeadm_kubelet_config_file_path }}
     --ignore-preflight-errors={{ kubernetes_ignore_preflight_errors }}
-    {{ kubernetes_kubeadm_init_extra_opts }} --cri-socket  /run/containerd/containerd.sock --upload-certs
+    {{ kubernetes_kubeadm_init_extra_opts }} --upload-certs --v=5
+##--cri-socket  /run/containerd/containerd.sock 
   register: kubeadmin_init
   when: (not kubernetes_init_stat.stat.exists) and (kubernetes_ignore_preflight_errors is defined)
 

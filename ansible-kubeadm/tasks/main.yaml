@@ -127,7 +127,6 @@
 # Set up nodes.
   - name: Get the kubeadm join command from the Kubernetes master.
     command: kubeadm token create --print-join-command
-    # changed_when: false
     when: kubernetes_role == 'master'
     register: kubernetes_join_command_result
 
@@ -136,7 +135,6 @@
       kubernetes_join_command: >
         {{ kubernetes_join_command_result.stdout }}
         {{ kubernetes_join_command_extra_opts }}
-    #when: kubernetes_join_command_result.stdout is defined
     when: kubernetes_join_command_result is changed
     delegate_to: "{{ item }}"
     delegate_facts: true
@@ -152,7 +150,6 @@
     ignore_errors: yes
     command: "kubectl label nodes worker-02 worker-03 node-role.kubernetes.io/worker=worker"
     
-  
   - name: Copy metric serverl yaml file with owner and permission.
     ansible.builtin.copy:
       src: metric-server.yaml

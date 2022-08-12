@@ -9,9 +9,9 @@ kubernetes_packages:
   - name: kubernetes-cni
     state: present
 
-kubernetes_version: '1.20'
-kubernetes_version_rhel_package: '1.20.4'
-
+kubernetes_version: '1.22'
+kubernetes_version_rhel_package: '1.22.12'
+## https://kubernetes.io/releases/
 #kubernetes_role: master
 
 kubernetes_kubelet_extra_args: ""
@@ -40,11 +40,11 @@ kubernetes_config_cluster_configuration:
 
 kubernetes_pod_network:
   # Flannel CNI.
-  # cni: 'flannel'
-  # cidr: '10.244.0.0/16'
+   cni: 'flannel'
+   cidr: '10.244.0.0/16'
   # Calico CNI.
-  cni: 'calico'
-  cidr: '192.168.0.0/16'
+  #cni: 'calico'
+  #cidr: '192.168.0.0/16'
   # Weave CNI.
   #cni: 'weave'
   #cidr: '10.244.0.0/16'
